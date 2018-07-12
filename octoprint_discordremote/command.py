@@ -17,14 +17,17 @@ class Command:
         self.command_dict = collections.OrderedDict()
         self.command_dict['/connect'] = {'cmd': self.connect, 'params': "[port] [baudrate]", 'description': "Connect to a printer."}
         self.command_dict['/disconnect'] = {'cmd': self.disconnect, 'description': "Disconnect from a printer."}
-        self.command_dict['/print'] = {'cmd': self.start_print, 'params': "{filename}", 'description': "Print a file."}
         self.command_dict['/files'] = {'cmd': self.list_files, 'description': "List all the files."}
+        self.command_dict['/print'] = {'cmd': self.start_print, 'params': "{filename}", 'description': "Print a file."}
+        self.command_dict['/getfile'] = {'cmd': self.get_file, 'params': "{filename}", 'description': "Get a file."}
         self.command_dict['/abort'] = {'cmd': self.cancel_print, 'description': "Abort a print."}
         self.command_dict['/snapshot'] = {'cmd': self.snapshot, 'description': "Take a snapshot with the camera."}
         self.command_dict['/status'] = {'cmd': self.status, 'description': "Get the current printer status."}
         self.command_dict['/help'] = {'cmd': self.help, 'description': "Print this help."}
         self.command_dict['/pause'] = {'cmd': self.pause, 'description': "Pause current print."}
         self.command_dict['/resume'] = {'cmd': self.resume, 'description': "Resume current print."}
+        self.command_dict['/snapshots'] = {'cmd': self.list_snapshots, 'description': "List all the snapshots."}
+        self.command_dict['/snapshots'] = {'cmd': self.get_snapshot, 'description': "Get a snapshot."}
 
         # Load plugins
         for command_plugin in plugin_list:
@@ -82,6 +85,21 @@ class Command:
             return "Invalid file location?", None
 
         return "Successfully started print: %s" % file['path'], None
+
+    def get_file(self, params):
+        if len(params) != 2:
+            return "Wrong number of arguments, try 'getfile [filename]'", None
+
+        file = self.find_file(params[1])
+        if file is None:
+            return "Failed to find the file", None
+
+        if file['location'] == 'sdcard':
+            return "File was on SD card, no way to get files from SD card yet."
+
+        fl = open(self.plugin._file_manager.path_on_disk(file['location'], file['path']), 'rb')
+        return None, (file['path'], fl)
+
 
     def list_files(self):
         file_list = self.get_flat_file_list()
@@ -253,3 +271,6 @@ class Command:
                 if chunk:  # filter out keep-alive new chunks
                     f.write(chunk)
         return "File Received: %s\n" % filename
+
+    def list_snapshots(self):
+

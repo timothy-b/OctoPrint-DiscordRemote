@@ -346,9 +346,13 @@ class Discord:
             json_str = json.dumps({"content": message})
             data = {"payload_json": json_str}
 
-        if snapshot:
-            snapshot.seek(0)
-            files = [("file", ("snapshot.png", snapshot))]
+        if snapshot is not None:
+            if len(snapshot) != 2:
+                self.logger.error("Snapshot was not a tuple, should contain the filename and the file: %s" % snapshot)
+                return False
+            snapshot[1].seek(0)
+            files = [("file", snapshot)]
+
 
         if files is None and data is None:
             return False

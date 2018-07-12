@@ -397,9 +397,9 @@ class DiscordRemotePlugin(octoprint.plugin.EventHandlerPlugin,
 
             new_image = BytesIO()
             img.save(new_image, 'png')
-
-            return new_image
-        return snapshot
+o   
+            return "snapshot.png", new_image
+        return "snapshot.png", snapshot
 
     def update_discord_status(self, connected):
         self._plugin_manager.send_plugin_message(self._identifier, dict(isConnected=connected))
